@@ -1,0 +1,12 @@
+# Web Framework
+Flask>=2.0.0
+
+# DICOM Networking & Parsing
+pynetdicom>=2.0.0
+pydicom>=2.3.0
+
+# Environment Variables Management
+python-dotenv>=1.0.0
+
+# WSGI Server (Opsional, sangat disarankan jika akan di-deploy ke production)
+gunicorn>=20.1.0

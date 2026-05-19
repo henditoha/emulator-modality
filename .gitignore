@@ -1,0 +1,54 @@
+# =========================
+# Security & Config Files
+# =========================
+.env
+.env.*
+*.pem
+*.key
+
+# =========================
+# Python / Flask
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+instance/
+.webassets-cache
+
+# =========================
+# Virtual Environments
+# =========================
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# =========================
+# IDEs & Text Editors
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.sonarlint/
+
+# =========================
+# OS Generated Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =========================
+# Logs & Databases
+# =========================
+*.log
+*.sqlite3
+*.db

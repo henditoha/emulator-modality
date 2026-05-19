@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <title>Workstation Emulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+        font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+        img-src 'self' data: blob:;
+        connect-src 'self';">
+    
+    <!-- Link ke library eksternal dan CSS yang sudah dipisah -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/emulator.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1><i class="fas fa-wave-square" style="color: var(--primary-gold);"></i> Workstation<span>Emulator</span></h1>
+            <p>Emulator Modality ECG, ENDOSCOPY, USG, MRI, CT Scan, X-Ray</p>
+        </div>
+    </header>
+
+    <div class="console-grid">
+        <main class="card-console">
+            <div class="tabs-navigation">
+                <button class="tab-trigger active" onclick="openTab(event, 'tab-local')">
+                    <i class="fas fa-network-wired"></i> Local
+                </button>
+                <button class="tab-trigger" onclick="openTab(event, 'tab-mwl')">
+                    <i class="fas fa-tags"></i> Worklist
+                </button>
+                <button class="tab-trigger" onclick="openTab(event, 'tab-pacs')">
+                    <i class="fas fa-server"></i> Storage
+                </button>
+            </div>
+
+            <div id="tab-local" class="tab-pane active">
+                <div class="pane-header">
+                    <h3>Konfigurasi Modality Sistem Lokal</h3>
+                    <p>Konfigurasi parameter identifikasi Application Entity lokal untuk pengiriman data pencarian C-FIND.</p>
+                </div>
+                <form id="form-local" onsubmit="handleFormSubmit(event, 'local')">
+                    <div class="form-layout">
+                        <div class="input-block">
+                            <label for="local_ip">Local IP Address</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-desktop"></i>
+                                <input type="text" id="local_ip" name="local_ip" class="form-control" value="{{ cfg.local_ip }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="local_port">Local Port Number</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-door-open"></i>
+                                <input type="number" id="local_port" name="local_port" class="form-control" value="{{ cfg.local_port }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="local_aet">Local AE Title</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card"></i>
+                                <input type="text" id="local_aet" name="local_aet" class="form-control" value="{{ cfg.local_aet }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="tab-mwl" class="tab-pane">
+                <div class="pane-header">
+                    <h3>Konfigurasi Target Modality Worklist (MWL)</h3>
+                    <p>Parameter server tujuan guna penarikan data jadwal antrean (Order) pasien rumah sakit.</p>
+                </div>
+                <form id="form-mwl" onsubmit="handleFormSubmit(event, 'mwl')">
+                    <div class="form-layout">
+                        <div class="input-block">
+                            <label for="mwl_ip">Target IP Address</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-network-wired"></i>
+                                <input type="text" id="mwl_ip" name="mwl_ip" class="form-control" value="{{ cfg.mwl_ip }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="mwl_port">Target Port Number</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-door-open"></i>
+                                <input type="number" id="mwl_port" name="mwl_port" class="form-control" value="{{ cfg.mwl_port }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="mwl_aet">Target AE Title</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-server"></i>
+                                <input type="text" id="mwl_aet" name="mwl_aet" class="form-control" value="{{ cfg.mwl_aet }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="tab-pacs" class="tab-pane">
+                <div class="pane-header">
+                    <h3>Konfigurasi Target PACS Server</h3>
+                    <p>Parameter server penyimpanan gambar radiologi utama (C-STORE Image Archive).</p>
+                </div>
+                <form id="form-pacs" onsubmit="handleFormSubmit(event, 'pacs')">
+                    <div class="form-layout">
+                        <div class="input-block">
+                            <label for="pacs_ip">Target IP Address</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-database"></i>
+                                <input type="text" id="pacs_ip" name="pacs_ip" class="form-control" value="{{ cfg.pacs_ip }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="pacs_port">Target Port Number</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-door-open"></i>
+                                <input type="number" id="pacs_port" name="pacs_port" class="form-control" value="{{ cfg.pacs_port }}" required>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="pacs_aet">Target AE Title</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-hdd"></i>
+                                <input type="text" id="pacs_aet" name="pacs_aet" class="form-control" value="{{ cfg.pacs_aet }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <aside class="monitor-sidebar">
+            <div class="monitor-panel">
+                <div class="panel-subtitle"><i class="fas fa-heartbeat"></i> System Status</div>
+                <div class="status-grid">
+                    <div class="status-row">
+                        <div class="status-label"><i class="fas fa-microchip"></i> Local Core Node</div>
+                        <div class="status-indicator"><span class="dot online"></span> READY</div>
+                    </div>
+                    <div class="status-row">
+                        <div class="status-label"><i class="fas fa-link"></i> Target Connectivity</div>
+                        <div class="status-indicator" id="network-status-indicator"><span class="dot" id="network-status-dot"></span> UNCHECKED</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="monitor-panel">
+                <div class="panel-subtitle"><i class="fas fa-terminal"></i> Detailed System Log</div>
+                <div class="terminal-log" id="log-terminal">
+                    <div class="terminal-line"><span class="terminal-timestamp">[SYSTEM INIT]</span> Terminal pemantauan MRI Workstation diaktifkan...</div>
+                    <div class="terminal-line"><span class="terminal-timestamp">[SYNC]</span> Berhasil menarik state konfigurasi dari .env secara real-time!</div>
+                </div>
+            </div>
+        </aside>
+
+        <footer class="control-action-bar">
+            <button type="button" class="btn-medical btn-ping" onclick="triggerPing()">
+                <i class="fas fa-satellite-dish"></i> Test Ping (C-ECHO)
+            </button>
+            <button type="button" class="btn-medical btn-save" onclick="triggerSave()">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+        </footer>
+
+    </div>
+</div>
+
+<div id="toast">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
+</div>
+
+<!-- Script terpisah dimuat di akhir body -->
+<script src="{{ url_for('static', filename='js/emulator.js') }}"></script>
+</body>
+</html>
