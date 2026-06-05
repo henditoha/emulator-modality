@@ -1,3 +1,60 @@
+/* Declarasi Webfont Lokal (DM Sans) */
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-300.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-600.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-800.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url('../webfonts/dm-sans-v17-latin-900.woff2') format('woff2');
+}
+
 :root {
     --bg-workspace: #16243d;       
     --panel-bg: rgba(30, 46, 79, 0.85); 
@@ -14,7 +71,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body { 
-    font-family: 'Inter', sans-serif; 
+    font-family: 'DM Sans', sans-serif; 
     background-color: var(--bg-workspace); 
     background-image: 
         linear-gradient(rgba(53, 74, 115, 0.15) 1px, transparent 1px),
