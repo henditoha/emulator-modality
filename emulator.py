@@ -190,7 +190,7 @@ def api_test_ping():
 
 if __name__ == '__main__':
     # Membatasi akses aplikasi hanya dari localhost demi keamanan (S8392)
-    flask_host = '127.0.0.1'
+    flask_host = '0.0.0.0'
     
     # Membaca port secara dinamis dari file .env dengan penanganan fallback yang aman
     try:
