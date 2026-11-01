@@ -143,16 +143,19 @@ def perform_c_echo(target_ip: str, target_port: int, target_aet: str, local_aet:
         return False
 
 def perform_study_find(target_ip: str, target_port: int, target_aet: str, local_aet: str, 
-                       patient_id: str = "", patient_name: str = "") -> Optional[List[Dataset]]:
+                       patient_id: str = "", patient_name: str = "",
+                       study_date: str = "", modality: str = "", accession_number: str = "") -> Optional[List[Dataset]]:
     ae = _setup_application_entity(local_aet)
     
+    clean_date = study_date.replace('-', '').strip() if study_date else ''
     ds = Dataset()
     ds.QueryRetrieveLevel = 'STUDY'
     ds.PatientID = patient_id
     ds.PatientName = patient_name
-    ds.StudyDate = ''
+    ds.StudyDate = clean_date
     ds.StudyInstanceUID = ''
-    ds.AccessionNumber = ''
+    ds.AccessionNumber = accession_number
+    ds.ModalitiesInStudy = modality.upper() if modality else ''
     ds.StudyDescription = ''
 
     logging.info("🔍 Mencari EXAM (Study) ke PACS %s@%s:%s...", target_aet, target_ip, target_port)
@@ -176,20 +179,22 @@ def perform_study_find(target_ip: str, target_port: int, target_aet: str, local_
         return None
 
 def perform_mwl_find(target_ip: str, target_port: int, target_aet: str, local_aet: str, 
-                     patient_id: str = "", patient_name: str = "") -> Optional[List[Dataset]]:
+                     patient_id: str = "", patient_name: str = "",
+                     study_date: str = "", modality: str = "", accession_number: str = "") -> Optional[List[Dataset]]:
     ae = _setup_application_entity(local_aet)
     
+    clean_date = study_date.replace('-', '').strip() if study_date else ''
     ds = Dataset()
     ds.PatientID = patient_id
     ds.PatientName = patient_name
-    ds.AccessionNumber = ''
+    ds.AccessionNumber = accession_number
     ds.RequestedProcedureDescription = ''
     
     ds.ScheduledProcedureStepSequence = [Dataset()]
     ds.ScheduledProcedureStepSequence[0].ScheduledStationAETitle = ''
-    ds.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartDate = ''
+    ds.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartDate = clean_date
     ds.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartTime = ''
-    ds.ScheduledProcedureStepSequence[0].Modality = ''
+    ds.ScheduledProcedureStepSequence[0].Modality = modality.upper() if modality else ''
 
     logging.info("📋 Mencari ORDER (Worklist) ke MWL %s@%s:%s...", target_aet, target_ip, target_port)
 
@@ -243,6 +248,9 @@ def main():
     parser.add_argument("--local_aet", default=DEFAULT_LOCAL_AET, help=f"AE Title lokal (default: {DEFAULT_LOCAL_AET})")
     parser.add_argument("--pid", default="", help="Filter Patient ID")
     parser.add_argument("--pname", default="", help="Filter Patient Name (gunakan '*' untuk wildcard)")
+    parser.add_argument("--date", default="", help="Filter Tanggal (YYYY-MM-DD atau YYYYMMDD)")
+    parser.add_argument("--modality", default="", help="Filter Modality (misal: US, MR, CT, CR)")
+    parser.add_argument("--acc", default="", help="Filter Accession Number")
 
     args = parser.parse_args()
     target_ip, target_port, target_aet = _get_target_config(args)
@@ -250,9 +258,13 @@ def main():
     if args.action == "echo":
         perform_c_echo(target_ip, target_port, target_aet, args.local_aet)
     elif args.action == "find-exam":
-        perform_study_find(target_ip, target_port, target_aet, args.local_aet, args.pid, args.pname)
+        perform_study_find(target_ip, target_port, target_aet, args.local_aet, 
+                           patient_id=args.pid, patient_name=args.pname,
+                           study_date=args.date, modality=args.modality, accession_number=args.acc)
     elif args.action == "find-order":
-        perform_mwl_find(target_ip, target_port, target_aet, args.local_aet, args.pid, args.pname)
+        perform_mwl_find(target_ip, target_port, target_aet, args.local_aet, 
+                         patient_id=args.pid, patient_name=args.pname,
+                         study_date=args.date, modality=args.modality, accession_number=args.acc)
 
 if __name__ == "__main__":
     main()

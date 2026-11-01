@@ -38,6 +38,9 @@
                 <button class="tab-trigger" onclick="openTab(event, 'tab-pacs')">
                     <i class="fas fa-server"></i> Storage
                 </button>
+                <button class="tab-trigger" onclick="openTab(event, 'tab-cfind')">
+                    <i class="fas fa-search"></i> C-FIND
+                </button>
             </div>
 
             <div id="tab-local" class="tab-pane active">
@@ -135,6 +138,163 @@
                     </div>
                 </form>
             </div>
+
+            <div id="tab-cfind" class="tab-pane">
+                <div class="pane-header">
+                    <div class="pane-header-title">
+                        <h3><i class="fas fa-search"></i> Pencarian Data Modality (C-FIND)</h3>
+                        <p>Query antrean jadwal pasien (Worklist MWL) atau arsip pemeriksaan (Study PACS) menggunakan filter parameter DICOM.</p>
+                    </div>
+                </div>
+
+                <!-- Target Query Selection & Info Badge -->
+                <div class="cfind-target-bar">
+                    <div class="cfind-target-selector">
+                        <label class="radio-label">
+                            <input type="radio" name="cfind_target_type" value="mwl" checked onchange="handleCfindTargetChange()">
+                            <span><i class="fas fa-tags"></i> Modality Worklist (MWL)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="cfind_target_type" value="pacs" onchange="handleCfindTargetChange()">
+                            <span><i class="fas fa-server"></i> Storage (PACS Study)</span>
+                        </label>
+                    </div>
+                    <div class="cfind-target-badge" id="cfind-target-badge">
+                        <i class="fas fa-circle-nodes"></i> Target: <strong id="cfind-target-name">{{ cfg.mwl_aet }}</strong> (<span id="cfind-target-endpoint">{{ cfg.mwl_ip }}:{{ cfg.mwl_port }}</span>)
+                    </div>
+                </div>
+
+                <!-- Form Filter C-FIND -->
+                <form id="form-cfind" onsubmit="handleCfindSubmit(event)">
+                    <div class="cfind-filter-card">
+                        <div class="cfind-filter-grid">
+                            
+                            <!-- Filter 1: Tanggal (Date) -->
+                            <div class="input-block">
+                                <div class="label-with-actions">
+                                    <label for="cfind_date"><i class="fas fa-calendar-day"></i> Filter Tanggal</label>
+                                    <div class="date-quick-actions">
+                                        <button type="button" class="btn-quick-tag" onclick="setDateFilter('today')">Hari Ini</button>
+                                        <button type="button" class="btn-quick-tag" onclick="setDateFilter('yesterday')">Kemarin</button>
+                                        <button type="button" class="btn-quick-tag" onclick="setDateFilter('clear')">Semua</button>
+                                    </div>
+                                </div>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <input type="date" id="cfind_date" name="cfind_date" class="form-control">
+                                </div>
+                            </div>
+
+                            <!-- Filter 2: Modality Type -->
+                            <div class="input-block">
+                                <label for="cfind_modality"><i class="fas fa-x-ray"></i> Modality Type</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-microscope"></i>
+                                    <select id="cfind_modality" name="cfind_modality" class="form-control custom-select">
+                                        <option value="">-- Semua Modality (ALL) --</option>
+                                        <option value="CR">CR - Computed Radiography</option>
+                                        <option value="CT">CT - Computed Tomography</option>
+                                        <option value="MR">MR - Magnetic Resonance</option>
+                                        <option value="US">US - Ultrasound</option>
+                                        <option value="DX">DX - Digital Radiography</option>
+                                        <option value="ECG">ECG - Electrocardiogram</option>
+                                        <option value="ES">ES - Endoscopy</option>
+                                        <option value="XA">XA - X-Ray Angiography</option>
+                                        <option value="NM">NM - Nuclear Medicine</option>
+                                        <option value="MG">MG - Mammography</option>
+                                        <option value="OT">OT - Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Filter 3: Patient ID -->
+                            <div class="input-block">
+                                <label for="cfind_pid"><i class="fas fa-id-card"></i> Patient ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-tag"></i>
+                                    <input type="text" id="cfind_pid" name="cfind_pid" class="form-control" placeholder="Contoh: RM-TEST-01 atau 0030005502">
+                                </div>
+                            </div>
+
+                            <!-- Filter 4: Accession Number -->
+                            <div class="input-block">
+                                <label for="cfind_acc"><i class="fas fa-barcode"></i> Accession Number</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-file-invoice"></i>
+                                    <input type="text" id="cfind_acc" name="cfind_acc" class="form-control" placeholder="Contoh: ACC-TEST-999 atau 562259/35">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Tombol Aksi Form Filter -->
+                        <div class="cfind-actions-row">
+                            <button type="submit" class="btn-medical btn-cfind-run" id="btn-cfind-submit">
+                                <i class="fas fa-search"></i> Jalankan C-FIND
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="resetCfindFilters()">
+                                <i class="fas fa-rotate-left"></i> Reset Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Area Hasil Pencarian -->
+                <div class="cfind-results-card">
+                    <div class="cfind-results-header">
+                        <div class="results-title">
+                            <h4><i class="fas fa-table-list"></i> Hasil Query DICOM</h4>
+                            <span class="results-badge" id="cfind-count-badge">0 Data Ditemukan</span>
+                        </div>
+                        <div class="results-status" id="cfind-query-status">
+                            <span class="status-chip ready"><i class="fas fa-info-circle"></i> Siap Melakukan Query</span>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="cfind-table-container">
+                        <!-- Loading State -->
+                        <div class="cfind-state-box hidden" id="cfind-loading-state">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            <p>Mengirim C-FIND Request ke Server DICOM...</p>
+                            <span class="state-sub">Membuka asosiasi dan menunggu respon DIMSE</span>
+                        </div>
+
+                        <!-- Empty Init State -->
+                        <div class="cfind-state-box" id="cfind-empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Belum ada data query.</p>
+                            <span class="state-sub">Tentukan filter pencarian di atas, lalu klik <strong>Jalankan C-FIND</strong>.</span>
+                        </div>
+
+                        <!-- No Result State -->
+                        <div class="cfind-state-box hidden" id="cfind-none-state">
+                            <i class="fas fa-search-minus"></i>
+                            <p>Tidak ada hasil ditemukan.</p>
+                            <span class="state-sub">Tidak ada jadwal atau data pemeriksaan yang cocok dengan filter yang Anda tentukan.</span>
+                        </div>
+
+                        <!-- Table Data -->
+                        <table class="medical-table hidden" id="cfind-data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Patient ID</th>
+                                    <th>Nama Pasien</th>
+                                    <th>Accession No</th>
+                                    <th>Modality</th>
+                                    <th>Tanggal & Waktu</th>
+                                    <th>Deskripsi Pemeriksaan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cfind-table-body">
+                                <!-- Baris data di-generate via JavaScript secara aman -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </main>
 
         <aside class="monitor-sidebar">
@@ -162,14 +322,33 @@
         </aside>
 
         <footer class="control-action-bar">
-            <button type="button" class="btn-medical btn-ping" onclick="triggerPing()">
+            <button type="button" class="btn-medical btn-ping" id="btn-action-ping" onclick="triggerPing()">
                 <i class="fas fa-satellite-dish"></i> Test Ping (C-ECHO)
             </button>
-            <button type="button" class="btn-medical btn-save" onclick="triggerSave()">
-                <i class="fas fa-save"></i> Simpan
+            <button type="button" class="btn-medical btn-save" id="btn-action-main" onclick="triggerMainAction()">
+                <i class="fas fa-save" id="btn-action-main-icon"></i> <span id="btn-action-main-text">Simpan</span>
             </button>
         </footer>
 
+    </div>
+</div>
+
+<!-- Modal Detail DICOM -->
+<div id="cfind-detail-modal" class="modal-overlay hidden" onclick="handleModalBackdropClick(event)">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-notes-medical" style="color: var(--primary-gold);"></i>
+                <h3>Detail Tag DICOM (C-FIND)</h3>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeDetailModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="cfind-detail-content">
+            <!-- Isi modal detail diisi dinamis via JS -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeDetailModal()">Tutup</button>
+        </div>
     </div>
 </div>
 
